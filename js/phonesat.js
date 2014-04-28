@@ -14,6 +14,8 @@ jQuery( document ).ready(function() {
 		//P4C,783,0,0,0,
 		//P4C,800,0,0,0,
 		
+		//5034432c3730332c302c3436382c302c5589f1904e8a5b8a328ab08a6190409051905f906789a590318f2b90f18ffe8cd585f7882ceb6db74c90ed90eb91c390f083d08f9f825e80957de07ef18fa68fb88fe68fc78e488fda20202020286864c93440227cfdd544d020202020202098b12020202020202020
+		
 		var patt = /(..)(.),(\d+?),(\d+?),(\d+?),(\d+?),(.*)/g;
 		
 		if (result=patt.exec(rawPacket)) {
