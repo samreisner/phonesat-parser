@@ -1,6 +1,8 @@
 jQuery( document ).ready(function() {
 	jQuery("#parsepacketbutton").click(function() {
-	
+		jQuery("#warnings").hide();
+			jQuery("#warningmessages").html("");
+		
 		ga('send', 'event', 'button', 'click', 'track');
 
 		var rawPacket = jQuery("#rawpacket").val();
@@ -18,10 +20,10 @@ jQuery( document ).ready(function() {
 		var ptime;
 		var utime;
 		
-		var pattC = /(..)(C),(\d+?),(\d+?),(\d+?),(\d+?),(.)(.*)/g;
-		var pattB = /(..)(A|D)(.....)(.....)(.*)/g;
-		var pattP = /(..)(P)(.....)(.....)(.*)/g;
-		
+		var pattC = /.*?(P4)(C),(\d+?),(\d+?),(\d+?),(\d+?),(.)(.*)/g;
+		var pattB = /.*?(P4)(A|D)(.....)(.....)(.*)/g;
+		var pattP = /.*?(P4)(P)(.....)(.....)(.*)/g;
+		var pattH = /.*?50.*?/g;
 		if (result=pattC.exec(rawPacket)) {
 			ga('send', 'event', 'track', 'track', 'track',1);				
 			Preamble = RegExp.$1;
@@ -68,11 +70,33 @@ jQuery( document ).ready(function() {
 			jQuery("#results").append("Mission Time: "+mtime+"<br />");
 			jQuery("#results").append("UTC Time (uploaded): "+utime+"<br />");
 			theOffset = 13;			
+		} else if (result=pattH.exec(rawPacket)) {
+//			var os=require('os')
+			//alert ("found hex");
+			lines = rawPacket.split("\n");
+			pattL = /.*\d+.*?\>(.*)$/
+			var theHex = "";
+			for (i=0; i<lines.length; i++) {
+
+				if (result = pattL.exec(lines[i])) {
+					theHex += RegExp.$1;
+				}
+
+			}
+			theHex = theHex.replace(/\s/g, '');
+			//alert(theHex);
+			str = "";
+			for (i=0; i<theHex.length; i+=2) {
+				str += String.fromCharCode(parseInt(theHex.substr(i, 2), 16));
+			}
+			jQuery("#rawpacket").val(str);
+			jQuery("#parsepacketbutton").click();
+			
 		} else {
 			ga('send', 'event', 'track', 'track', 'track',4);		
-			alert("Not Matched");
+			jQuery("#warnings").show();
+			jQuery("#warningmessages").append("Did not find preamble of 'P4[C|P|A|D] with enough additional information to decode the contents.<br />");
 		}					
-//			jQuery("#results").append("Remainder of Packet: "+encodedPacket+"<br />");					
 			
 
 			/*
@@ -113,6 +137,12 @@ function getPiece(theVar,theString,offset) {
 	for (i = (numBytes-1); i>=0; i--) {
 		max*=224;
 		var thisChar = thisVarString.substr(i,1);
+		console.log("Thischar: "+thisChar);
+
+		if ((thisChar.charCodeAt(0) > 255) || (thisChar.charCodeAt(0) < 32)) {
+			jQuery("#warnings").show();
+			jQuery("#warningmessages").append("Character '"+thisChar+"' out of range: Decimal Value should be between 0-255, but we got: "+thisChar.charCodeAt(0)+".  Bad data ahead<br />");
+		}
 		console.log (thisChar +" is: "+thisChar.charCodeAt(0));
 		unscaled += (thisChar.charCodeAt(0) - 32) * places;
 		places*=224;
@@ -120,7 +150,11 @@ function getPiece(theVar,theString,offset) {
 		
 	}
 	var scaled = unscaled/max;
+	console.log("Scaled: "+scaled);
 	var range =(theVar.scalemax-theVar.scalemin);
+	console.log("Range: "+range);
+	console.log("R*S: "+(range*scaled));
+	
 	var number = (range*scaled)-(0-theVar.scalemin);	
 //	return ((theVar.scalemax-theVar.scalemin)*scaled)-theVar.scalemax;
 //	return number+" "+(range*scaled)-(0-theVar.scalemin)+" Unshifted: "+(range*scaled)+" - percentage: "+unscaled/max+" -unscaled is: "+unscaled+" ("+theString.substr(((theVar.offset-offset)*8),(theVar.size)*8)+")";
