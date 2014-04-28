@@ -10,33 +10,36 @@ jQuery( document ).ready(function() {
 		var RebootB;
 		var Deployed;
 		var encodedPacket;
-		
+		var Preamble;
 		//P4C,783,0,0,0,
 		//P4C,800,0,0,0,
 		
 		//5034432c3730332c302c3436382c302c5589f1904e8a5b8a328ab08a6190409051905f906789a590318f2b90f18ffe8cd585f7882ceb6db74c90ed90eb91c390f083d08f9f825e80957de07ef18fa68fb88fe68fc78e488fda20202020286864c93440227cfdd544d020202020202098b12020202020202020
 		
-		var patt = /(..)(.),(\d+?),(\d+?),(\d+?),(\d+?),(.*)/g;
+		var patt = /(..)(.),(\d+?),(\d+?),(\d+?),(\d+?),(.)(.*)/g;
 		
 		if (result=patt.exec(rawPacket)) {
 //			result = patt.exec(rawPacket);
-			SatID = RegExp.$1;
+			Preamble = RegExp.$1;
 			PacketType = RegExp.$2;
 			BatteryVoltage = RegExp.$3;
 			RebootA = RegExp.$4;
 			RebootB = RegExp.$5;
 			Deployed = RegExp.$6;
-			encodedPacket = RegExp.$7;
+			SatID = (RegExp.$7.charCodeAt())-32;
+			encodedPacket = RegExp.$8;
 			jQuery("#results").html("");
-			jQuery("#results").append("Sat ID: "+SatID+"<br />");
+			jQuery("#results").append("Preamble: "+Preamble+"<br />");
 			jQuery("#results").append("Packet Type: "+PacketType+"<br />");
-			jQuery("#results").append("Battery Voltage: "+BatteryVoltage+"<br />");						
-			jQuery("#results").append("Reboot Counter 1: "+RebootA+"<br />");						
-			jQuery("#results").append("Reboot Counter 2: "+RebootB+"<br />");						
+			jQuery("#results").append("Scaled Battery Voltage (V): "+BatteryVoltage+"<br />");						
+			jQuery("#results").append("Phone reboots: "+RebootA+"<br />");						
+			jQuery("#results").append("ACS reboots: "+RebootB+"<br />");						
 			jQuery("#results").append("Deployed Indicator: "+Deployed+"<br />");						
-			jQuery("#results").append("Remainder of Packet: "+encodedPacket+"<br />");						
+			jQuery("#results").append("Satellite ID: "+SatID+"<br />");									
+//			jQuery("#results").append("Remainder of Packet: "+encodedPacket+"<br />");					
+			
 
-
+			/*
 			var res = [ ];
 			var binaryPacket = "";
 			var pad = "00000000";
@@ -48,12 +51,12 @@ jQuery( document ).ready(function() {
 			});
 
 			jQuery("#results").append( res+"<br />" );
-
+			*/
 			vars = initializeVariables()
-			console.log(vars);		
+			//console.log(vars);		
 			theOffset = 16;
 			for (var i = 0; i < vars.length; i++) {
-				jQuery("#results").append(vars[i].name + ": "+getPiece(vars[i],binaryPacket,theOffset)+"<br />");
+				jQuery("#results").append(vars[i].name + ": "+getPiece(vars[i],encodedPacket,theOffset)+"<br />");
 			}
 		} else {
 			alert("Not Matched");
@@ -72,10 +75,9 @@ jQuery( document ).ready(function() {
 });
 
 function getPiece(theVar,theString,offset) {
-	var thisVarString = theString.substr(((theVar.offset-offset)*8),(theVar.size)*8);
-	if (theVar.varType == "ASCII")
-		return String.fromCharCode(parseInt(theString.substr(theVar.offset-offset,(theVar.size)*8) , 2));
-		
+	var thisVarString = theString.substr(((theVar.offset-offset)-1),(theVar.size));
+//	console.log(thisVarString.charCodeAt(0) + "; "+thisVarString.charCodeAt(1));
+//	return "TBD";
 	var numBytes = theVar.size;
 	
 	var places = 1;
@@ -83,16 +85,20 @@ function getPiece(theVar,theString,offset) {
 	var max = 1;
 	for (i = (numBytes-1); i>=0; i--) {
 		max*=224;
-		console.log("Substring "+i+": "+thisVarString.substr((8*i),8));
-		unscaled += (parseInt(thisVarString.substr((8*i),8),2) - 32) * places;
+//		console.log("Substring "+i+": "+thisVarString.substr((8*i),8));
+		var thisChar = thisVarString.substr(i,1);
+		console.log (thisChar +" is: "+thisChar.charCodeAt(0));
+		unscaled += (thisChar.charCodeAt(0) - 32) * places;
 		places*=224;
-		
+		console.log ("Unscaled is: "+unscaled);
 		
 	}
 	var scaled = unscaled/max;
-	
+	var range =(theVar.scalemax-theVar.scalemin);
 //	return ((theVar.scalemax-theVar.scalemin)*scaled)-theVar.scalemax;
-	return ((theVar.scalemax-theVar.scalemin)*scaled)+" - percentage: "+unscaled/max+" -unscaled is: "+unscaled+" ("+theString.substr(((theVar.offset-offset)*8),(theVar.size)*8)+")";
+//	return (range*scaled)-(0-theVar.scalemin)+" Unshifted: "+(range*scaled)+" - percentage: "+unscaled/max+" -unscaled is: "+unscaled+" ("+theString.substr(((theVar.offset-offset)*8),(theVar.size)*8)+")";
+	var number = (range*scaled)-(0-theVar.scalemin);
+	return number.toFixed(4);
 }
 
 
@@ -142,51 +148,52 @@ Substring 0: 00100000
 */
 function initializeVariables() {
 	variables = [];
-	variables[0] = {offset:16, size:1, name:"Satellite ID", description:"T, U",unit: "~",scalemin:"",scalemax:"",varType: "ASCII"};
-	variables[1] = {offset:17, size:2, name:"mag_bef_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[2] = {offset:19, size:2, name:"gyro_bef_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[3] = {offset:21, size:2, name:"magP_actHI_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[4] = {offset:23, size:2, name:"magP_actMed_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[5] = {offset:25, size:2, name:"magN_actHI_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[6] = {offset:27, size:2, name:"magN_actMed_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[7] = {offset:29, size:2, name:"gyroP_actHI_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[8] = {offset:31, size:2, name:"gyroP_actMed_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[9] = {offset:33, size:2, name:"gyroN_actHI_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[10] = {offset:35, size:2, name:"gyroN_actMed_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[11] = {offset:37, size:2, name:"mag_aft_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[12] = {offset:39, size:2, name:"gyro_aft_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[13] = {offset:41, size:2, name:"mag_bef_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[14] = {offset:43, size:2, name:"gyro_bef_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[15] = {offset:45, size:2, name:"magP_actHI_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[16] = {offset:47, size:2, name:"magP_actMed_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[17] = {offset:49, size:2, name:"magN_actHI_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[18] = {offset:51, size:2, name:"magN_actMed_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[19] = {offset:53, size:2, name:"gyroP_actHI_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[20] = {offset:55, size:2, name:"gyroP_actMed_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[21] = {offset:57, size:2, name:"gyroN_actHI_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[22] = {offset:59, size:2, name:"gyroN_actMed_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[23] = {offset:61, size:2, name:"mag_aft_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[24] = {offset:63, size:2, name:"gyro_aft_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[25] = {offset:65, size:2, name:"mag_bef_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[26] = {offset:67, size:2, name:"gyro_bef_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[27] = {offset:69, size:2, name:"magP_actHI_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[28] = {offset:71, size:2, name:"magP_actMed_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[29] = {offset:73, size:2, name:"magN_actHI_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[30] = {offset:75, size:2, name:"magN_actMed_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[31] = {offset:77, size:2, name:"gyroP_actHI_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[32] = {offset:79, size:2, name:"gyroP_actMed_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[33] = {offset:81, size:2, name:"gyroN_actHI_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[34] = {offset:83, size:2, name:"gyroN_actMed_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[35] = {offset:85, size:2, name:"mag_aft_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[36] = {offset:87, size:2, name:"gyro_aft_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[37] = {offset:89, size:2, name:"i_MHX", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[38] = {offset:91, size:2, name:"i_ADCS", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[39] = {offset:93, size:2, name:"i_solarXp", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[40] = {offset:95, size:2, name:"i_solarXn", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[41] = {offset:97, size:2, name:"i_solarYp", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[42] = {offset:99, size:2, name:"i_solarYn", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[43] = {offset:101, size:2, name:"i_solarZp", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[44] = {offset:103, size:2, name:"i_solarZn", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
+
+
+	variables[0] = {offset:17, size:2, name:"mag_bef_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[1] = {offset:19, size:2, name:"gyro_bef_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[2] = {offset:21, size:2, name:"magP_actHI_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[3] = {offset:23, size:2, name:"magP_actMed_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[4] = {offset:25, size:2, name:"magN_actHI_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[5] = {offset:27, size:2, name:"magN_actMed_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[6] = {offset:29, size:2, name:"gyroP_actHI_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[7] = {offset:31, size:2, name:"gyroP_actMed_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[8] = {offset:33, size:2, name:"gyroN_actHI_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[9] = {offset:35, size:2, name:"gyroN_actMed_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[10] = {offset:37, size:2, name:"mag_aft_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[11] = {offset:39, size:2, name:"gyro_aft_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[12] = {offset:41, size:2, name:"mag_bef_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[13] = {offset:43, size:2, name:"gyro_bef_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[14] = {offset:45, size:2, name:"magP_actHI_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[15] = {offset:47, size:2, name:"magP_actMed_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[16] = {offset:49, size:2, name:"magN_actHI_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[17] = {offset:51, size:2, name:"magN_actMed_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[18] = {offset:53, size:2, name:"gyroP_actHI_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[19] = {offset:55, size:2, name:"gyroP_actMed_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[20] = {offset:57, size:2, name:"gyroN_actHI_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[21] = {offset:59, size:2, name:"gyroN_actMed_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[22] = {offset:61, size:2, name:"mag_aft_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[23] = {offset:63, size:2, name:"gyro_aft_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[24] = {offset:65, size:2, name:"mag_bef_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[25] = {offset:67, size:2, name:"gyro_bef_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[26] = {offset:69, size:2, name:"magP_actHI_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[27] = {offset:71, size:2, name:"magP_actMed_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[28] = {offset:73, size:2, name:"magN_actHI_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[29] = {offset:75, size:2, name:"magN_actMed_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[30] = {offset:77, size:2, name:"gyroP_actHI_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[31] = {offset:79, size:2, name:"gyroP_actMed_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[32] = {offset:81, size:2, name:"gyroN_actHI_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[33] = {offset:83, size:2, name:"gyroN_actMed_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[34] = {offset:85, size:2, name:"mag_aft_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
+	variables[35] = {offset:87, size:2, name:"gyro_aft_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
+	variables[36] = {offset:89, size:2, name:"i_MHX", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
+	variables[37] = {offset:91, size:2, name:"i_ADCS", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
+	variables[38] = {offset:93, size:2, name:"i_solarXp", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
+	variables[39] = {offset:95, size:2, name:"i_solarXn", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
+	variables[40] = {offset:97, size:2, name:"i_solarYp", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
+	variables[41] = {offset:99, size:2, name:"i_solarYn", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
+	variables[42] = {offset:101, size:2, name:"i_solarZp", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
+	variables[43] = {offset:103, size:2, name:"i_solarZn", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
 
 	return variables;
 	
