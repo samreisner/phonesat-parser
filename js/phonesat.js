@@ -1,5 +1,8 @@
 jQuery( document ).ready(function() {
 	jQuery("#parsepacketbutton").click(function() {
+	
+		ga('send', 'event', 'button', 'click', 'track');
+
 		var rawPacket = jQuery("#rawpacket").val();
 		
 		//Satellite ID, the packet type, the battery voltage and two reboot counters
@@ -20,6 +23,7 @@ jQuery( document ).ready(function() {
 		var pattP = /(..)(P)(.....)(.....)(.*)/g;
 		
 		if (result=pattC.exec(rawPacket)) {
+			ga('send', 'event', 'track', 'track', 'track',1);				
 			Preamble = RegExp.$1;
 			PacketType = RegExp.$2;
 			BatteryVoltage = RegExp.$3;
@@ -39,6 +43,7 @@ jQuery( document ).ready(function() {
 			theOffset = 17;
 			
 		} else if (result=pattB.exec(rawPacket)) {
+			ga('send', 'event', 'track', 'track', 'track',2);		
 			Preamble = RegExp.$1;
 			PacketType = RegExp.$2;
 			mtime = RegExp.$3;
@@ -51,6 +56,7 @@ jQuery( document ).ready(function() {
 			jQuery("#results").append("Phone Time: "+ptime+"<br />");
 			theOffset = 13;
 		} else if (result=pattP.exec(rawPacket)) {
+			ga('send', 'event', 'track', 'track', 'track',3);		
 			Preamble = RegExp.$1;
 			PacketType = RegExp.$2;
 			mtime = RegExp.$3;
@@ -63,6 +69,7 @@ jQuery( document ).ready(function() {
 			jQuery("#results").append("UTC Time (uploaded): "+utime+"<br />");
 			theOffset = 13;			
 		} else {
+			ga('send', 'event', 'track', 'track', 'track',4);		
 			alert("Not Matched");
 		}					
 //			jQuery("#results").append("Remainder of Packet: "+encodedPacket+"<br />");					
