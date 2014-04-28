@@ -69,6 +69,11 @@ jQuery( document ).ready(function() {
 			jQuery("#results").html("");
 			jQuery("#results").append("Preamble: "+Preamble+"<br />");
 			jQuery("#results").append("Packet Type: "+PacketType+" (bdot <b>CAUTION: NOT IMPLEMENTED</b>)<br />");
+			
+			jQuery("#warnings").show();
+			jQuery("#warningmessages").append("BDOT packets not implemented; please check with author for more information/updates<br />");
+
+			
 			jQuery("#results").append("Mission Time: "+mtime+"<br />");
 			jQuery("#results").append("Phone Time: "+ptime+"<br />");
 			theOffset = 13;
@@ -82,6 +87,10 @@ jQuery( document ).ready(function() {
 			jQuery("#results").html("");
 			jQuery("#results").append("Preamble: "+Preamble+"<br />");
 			jQuery("#results").append("Packet Type: "+PacketType+" (pointing <b>CAUTION: NOT IMPLEMENTED</b>)<br />");
+			jQuery("#warnings").show();
+			jQuery("#warningmessages").append("POINTING packets not implemented; please check with author for more information/updates<br />");
+			
+			
 			jQuery("#results").append("Mission Time: "+mtime+"<br />");
 			jQuery("#results").append("UTC Time (uploaded): "+utime+"<br />");
 			theOffset = 13;			
