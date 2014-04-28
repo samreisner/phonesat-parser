@@ -11,15 +11,15 @@ jQuery( document ).ready(function() {
 		var Deployed;
 		var encodedPacket;
 		var Preamble;
-		//P4C,783,0,0,0,
-		//P4C,800,0,0,0,
+		var mtime;
+		var ptime;
+		var utime;
 		
-		//5034432c3730332c302c3436382c302c5589f1904e8a5b8a328ab08a6190409051905f906789a590318f2b90f18ffe8cd585f7882ceb6db74c90ed90eb91c390f083d08f9f825e80957de07ef18fa68fb88fe68fc78e488fda20202020286864c93440227cfdd544d020202020202098b12020202020202020
+		var pattC = /(..)(C),(\d+?),(\d+?),(\d+?),(\d+?),(.)(.*)/g;
+		var pattB = /(..)(A|D)(.....)(.....)(.*)/g;
+		var pattP = /(..)(P)(.....)(.....)(.*)/g;
 		
-		var patt = /(..)(.),(\d+?),(\d+?),(\d+?),(\d+?),(.)(.*)/g;
-		
-		if (result=patt.exec(rawPacket)) {
-//			result = patt.exec(rawPacket);
+		if (result=pattC.exec(rawPacket)) {
 			Preamble = RegExp.$1;
 			PacketType = RegExp.$2;
 			BatteryVoltage = RegExp.$3;
@@ -35,7 +35,36 @@ jQuery( document ).ready(function() {
 			jQuery("#results").append("Phone reboots: "+RebootA+"<br />");						
 			jQuery("#results").append("ACS reboots: "+RebootB+"<br />");						
 			jQuery("#results").append("Deployed Indicator: "+Deployed+"<br />");						
-			jQuery("#results").append("Satellite ID: "+SatID+"<br />");									
+			jQuery("#results").append("Satellite ID: "+SatID+"<br />");		
+			theOffset = 17;
+			
+		} else if (result=pattB.exec(rawPacket)) {
+			Preamble = RegExp.$1;
+			PacketType = RegExp.$2;
+			mtime = RegExp.$3;
+			ptime = RegExp.$4;
+			encodedPacket = RegExp.$5;
+			jQuery("#results").html("");
+			jQuery("#results").append("Preamble: "+Preamble+"<br />");
+			jQuery("#results").append("Packet Type: "+PacketType+"<br />");
+			jQuery("#results").append("Mission Time: "+mtime+"<br />");
+			jQuery("#results").append("Phone Time: "+ptime+"<br />");
+			theOffset = 13;
+		} else if (result=pattP.exec(rawPacket)) {
+			Preamble = RegExp.$1;
+			PacketType = RegExp.$2;
+			mtime = RegExp.$3;
+			utime = RegExp.$4;
+			encodedPacket = RegExp.$5;
+			jQuery("#results").html("");
+			jQuery("#results").append("Preamble: "+Preamble+"<br />");
+			jQuery("#results").append("Packet Type: "+PacketType+"<br />");
+			jQuery("#results").append("Mission Time: "+mtime+"<br />");
+			jQuery("#results").append("UTC Time (uploaded): "+utime+"<br />");
+			theOffset = 13;			
+		} else {
+			alert("Not Matched");
+		}					
 //			jQuery("#results").append("Remainder of Packet: "+encodedPacket+"<br />");					
 			
 
@@ -52,15 +81,12 @@ jQuery( document ).ready(function() {
 
 			jQuery("#results").append( res+"<br />" );
 			*/
-			vars = initializeVariables()
+			vars = initializeVariables(PacketType);
 			//console.log(vars);		
-			theOffset = 16;
 			for (var i = 0; i < vars.length; i++) {
 				jQuery("#results").append(vars[i].name + ": "+getPiece(vars[i],encodedPacket,theOffset)+"<br />");
 			}
-		} else {
-			alert("Not Matched");
-		}
+		
 		
 
 		
@@ -75,7 +101,7 @@ jQuery( document ).ready(function() {
 });
 
 function getPiece(theVar,theString,offset) {
-	var thisVarString = theString.substr(((theVar.offset-offset)-1),(theVar.size));
+	var thisVarString = theString.substr(((theVar.offset-offset)),(theVar.size));
 //	console.log(thisVarString.charCodeAt(0) + "; "+thisVarString.charCodeAt(1));
 //	return "TBD";
 	var numBytes = theVar.size;
@@ -95,9 +121,10 @@ function getPiece(theVar,theString,offset) {
 	}
 	var scaled = unscaled/max;
 	var range =(theVar.scalemax-theVar.scalemin);
+	var number = (range*scaled)-(0-theVar.scalemin);	
 //	return ((theVar.scalemax-theVar.scalemin)*scaled)-theVar.scalemax;
-//	return (range*scaled)-(0-theVar.scalemin)+" Unshifted: "+(range*scaled)+" - percentage: "+unscaled/max+" -unscaled is: "+unscaled+" ("+theString.substr(((theVar.offset-offset)*8),(theVar.size)*8)+")";
-	var number = (range*scaled)-(0-theVar.scalemin);
+	return number+" "+(range*scaled)-(0-theVar.scalemin)+" Unshifted: "+(range*scaled)+" - percentage: "+unscaled/max+" -unscaled is: "+unscaled+" ("+theString.substr(((theVar.offset-offset)*8),(theVar.size)*8)+")";
+
 	return number.toFixed(4);
 }
 
@@ -146,10 +173,10 @@ Substring 1: 01000000 phonesat.js:84
 Substring 0: 00100000 
 
 */
-function initializeVariables() {
+function initializeVariables(PacketType) {
 	variables = [];
 
-
+	if (PacketType == "C") {
 	variables[0] = {offset:17, size:2, name:"mag_bef_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
 	variables[1] = {offset:19, size:2, name:"gyro_bef_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
 	variables[2] = {offset:21, size:2, name:"magP_actHI_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
@@ -194,7 +221,131 @@ function initializeVariables() {
 	variables[41] = {offset:99, size:2, name:"i_solarYn", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
 	variables[42] = {offset:101, size:2, name:"i_solarZp", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
 	variables[43] = {offset:103, size:2, name:"i_solarZn", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
+	variables[44] = {offset:105, size:2, name:"t_phone", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[45] = {offset:107, size:2, name:"t_ADCS_MHX", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[46] = {offset:109, size:2, name:"t_solarXp", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[47] = {offset:111, size:2, name:"t_solarXn", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[48] = {offset:113, size:2, name:"t_solarYp", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[49] = {offset:115, size:2, name:"t_solarYn", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[50] = {offset:117, size:2, name:"t_solarZp", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[51] = {offset:119, size:2, name:"t_solarZn", description:"",unit: "C",scalemin:"0",scalemax:"1023",};	
+	} // Charge packet
+	
+	if ((PacketType=="A") || (PacketType=="D")) {
+		variables.push({offset:13, size:4, name:"bdot_time", description:"",unit: "~",scalemin:"",scalemax:"",scaleType:"unscaledint"});
+		variables.push({offset:17, size:2, name:"M1_bdot_mag_x", description:"(1) Magnetic field intensity-x",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:19, size:2, name:"M1_bdot_mag_y", description:"(1) Magnetic field intensity-y",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:21, size:2, name:"M1_bdot_mag_z", description:"(1) Magnetic field intensity-z",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:23, size:2, name:"M1_bdot_gyro_x", description:"(1) Calibrated raw spin rate-x",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:25, size:2, name:"M1_bdot_gyro_y", description:"(1) Calibrated raw spin rate-y",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:27, size:2, name:"M1_bdot_gyro_z", description:"(1) Calibrated raw spin rate-z",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:29, size:2, name:"M1_bdot_coil_x", description:"(1) magnetorquer coil value-x",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:31, size:2, name:"M1_bdot_coil_y", description:"(1) magnetorquer coil value-y",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:33, size:2, name:"M1_bdot_coil_z", description:"(1) magnetorquer coil value-z",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});		
 
+			
+		variables.push({offset:57, size:4, name:"bdot_time", description:"",unit: "~",scalemin:"",scalemax:"",scaleType:"unscaledint"});
+		variables.push({offset:61, size:2, name:"M3_bdot_mag_x", description:"(3) Magnetic field intensity-x",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:63, size:2, name:"M3_bdot_mag_y", description:"(3) Magnetic field intensity-y",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:65, size:2, name:"M3_bdot_mag_z", description:"(3) Magnetic field intensity-z",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:67, size:2, name:"M3_bdot_gyro_x", description:"(3) Calibrated raw spin rate-x",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:69, size:2, name:"M3_bdot_gyro_y", description:"(3) Calibrated raw spin rate-y",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:71, size:2, name:"M3_bdot_gyro_z", description:"(3) Calibrated raw spin rate-z",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:73, size:2, name:"M3_bdot_coil_x", description:"(3) magnetorquer coil value-x",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:75, size:2, name:"M3_bdot_coil_y", description:"(3) magnetorquer coil value-y",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:77, size:2, name:"M3_bdot_coil_z", description:"(3) magnetorquer coil value-z",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});		
+
+		variables.push({offset:79, size:4, name:"bdot_time", description:"",unit: "~",scalemin:"",scalemax:"",scaleType:"unscaledint"});
+		variables.push({offset:83, size:2, name:"M4_bdot_mag_x", description:"(4) Magnetic field intensity-x",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:85, size:2, name:"M4_bdot_mag_y", description:"(4) Magnetic field intensity-y",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:87, size:2, name:"M4_bdot_mag_z", description:"(4) Magnetic field intensity-z",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:89, size:2, name:"M4_bdot_gyro_x", description:"(4) Calibrated raw spin rate-x",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:91, size:2, name:"M4_bdot_gyro_y", description:"(4) Calibrated raw spin rate-y",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:93, size:2, name:"M4_bdot_gyro_z", description:"(4) Calibrated raw spin rate-z",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:95, size:2, name:"M4_bdot_coil_x", description:"(4) magnetorquer coil value-x",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:97, size:2, name:"M4_bdot_coil_y", description:"(4) magnetorquer coil value-y",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:99, size:2, name:"M4_bdot_coil_z", description:"(4) magnetorquer coil value-z",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});		
+
+
+		variables.push({offset:101, size:4, name:"bdot_time", description:"",unit: "~",scalemin:"",scalemax:"",scaleType:"unscaledint"});
+		variables.push({offset:105, size:2, name:"M5_bdot_mag_x", description:"(5) Magnetic field intensity-x",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:107, size:2, name:"M5_bdot_mag_y", description:"(5) Magnetic field intensity-y",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:109, size:2, name:"M5_bdot_mag_z", description:"(5) Magnetic field intensity-z",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:111, size:2, name:"M5_bdot_gyro_x", description:"(5) Calibrated raw spin rate-x",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:113, size:2, name:"M5_bdot_gyro_y", description:"(5) Calibrated raw spin rate-y",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:115, size:2, name:"M5_bdot_gyro_z", description:"(5) Calibrated raw spin rate-z",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:117, size:2, name:"M5_bdot_coil_x", description:"(5) magnetorquer coil value-x",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:119, size:2, name:"M5_bdot_coil_y", description:"(5) magnetorquer coil value-y",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:121, size:2, name:"M5_bdot_coil_z", description:"(5) magnetorquer coil value-z",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});		
+
+
+	} 	if (PacketType=="P") {
+		variables.push({offset:13, size:2, name:"mag_x", description:"Magnetic field intensity-x",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:15, size:2, name:"mag_y", description:"Magnetic field intensity-y",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:17, size:2, name:"mag_z", description:"Magnetic field intensity-z",unit: "uT",scalemin:"-999",scalemax:"999"});
+		variables.push({offset:19, size:2, name:"coil_x", description:"Magnetorquer coil value-x",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:21, size:2, name:"coil_y", description:"Magnetorquer coil value-y",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:23, size:2, name:"coil_z", description:"Magnetorquer coil value-z",unit: "mA/m^2",scalemin:"-1",scalemax:"1"});		
+
+		variables.push({offset:25, size:2, name:"magref_x", description:"magnetorquer-ref-x",unit: "mA/m^2",scalemin:"-255",scalemax:"255"});
+		variables.push({offset:27, size:2, name:"magref_y", description:"magnetorquer-ref-y",unit: "mA/m^2",scalemin:"-255",scalemax:"255"});
+		variables.push({offset:29, size:2, name:"magref_z", description:"magnetorquer-ref-z",unit: "mA/m^2",scalemin:"-255",scalemax:"255"});		
+
+		variables.push({offset:31, size:2, name:"sunref_x", description:"sun-ref-x",unit: "~",scalemin:"0",scalemax:"1000000000000"});
+		variables.push({offset:33, size:2, name:"sunref_y", description:"sun-ref-y",unit: "~",scalemin:"0",scalemax:"1000000000000"});
+		variables.push({offset:35, size:2, name:"sunref_z", description:"sun-ref-z",unit: "~",scalemin:"0",scalemax:"1000000000000"});
+		
+		variables.push({offset:37, size:2, name:"gyro_x", description:"Calibrated raw spin rate-x",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:39, size:2, name:"gyro_y", description:"Calibrated raw spin rate-y",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:41, size:2, name:"gyro_z", description:"Calibrated raw spin rate-z",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		
+		variables.push({offset:43, size:2, name:"PWM_x", description:"PWM: Reaction wheel scalar-x",unit: "RPM",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:45, size:2, name:"PWM_y", description:"PWM: Reaction wheel scalar-y",unit: "RPM",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:47, size:2, name:"PWM_z", description:"PWM: Reaction wheel scalar-z",unit: "RPM",scalemin:"-1",scalemax:"1"});		
+
+		variables.push({offset:49, size:2, name:"quat_1", description:"Q estimate(1) - Attitude",unit: "~",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:51, size:2, name:"quat_2", description:"Q estimate(2) - Attitude",unit: "~",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:53, size:2, name:"quat_3", description:"Q estimate(3) - Attitude",unit: "~",scalemin:"-1",scalemax:"1"});
+		variables.push({offset:55, size:2, name:"quat_4", description:"Q estimate(4) - Attitude",unit: "~",scalemin:"-1",scalemax:"1"});
+
+		variables.push({offset:57, size:2, name:"spin_x", description:"Filtered spin rate-x",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:59, size:2, name:"spin_y", description:"Filtered spin rate-y",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+		variables.push({offset:61, size:2, name:"spin_z", description:"Filtered spin rate-z",unit: "rad/s",scalemin:"-20",scalemax:"20"});
+
+		variables.push({offset:63, size:3, name:"pos_x", description:"Position X - ref to center of earth",unit: "km",scalemin:"-8000000",scalemax:"8000000"});
+		variables.push({offset:66, size:3, name:"pos_y", description:"Position Y - ref to center of earth",unit: "km",scalemin:"-8000000",scalemax:"8000000"});
+		variables.push({offset:69, size:3, name:"pos_z", description:"Position Z - ref to center of earth",unit: "km",scalemin:"-8000000",scalemax:"8000000"});
+		
+		variables.push({offset:72, size:2, name:"vel_x", description:"velocity-x",unit: "m/s",scalemin:"-9000",scalemax:"9000"});
+		variables.push({offset:74, size:2, name:"vel_y", description:"velocity-y",unit: "m/s",scalemin:"-9000",scalemax:"9000"});
+		variables.push({offset:76, size:2, name:"vel_z", description:"velocity-z",unit: "m/s",scalemin:"-9000",scalemax:"9000"});
+
+		variables.push({offset:78, size:2, name:"bat_volt", description:"scaled battery to voltage",unit: "TBC",scalemin:"0",scalemax:"1000",});
+		
+		variables.push({offset:80, size:2, name:"i_MHX", description:"current of MHX board",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:82, size:2, name:"i_ADCS", description:"current of ADCS board",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:84, size:2, name:"i_solarXp", description:"",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:86, size:2, name:"i_solarXn", description:"",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:88, size:2, name:"i_solarYp", description:"",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:90, size:2, name:"i_solarYn", description:"",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:92, size:2, name:"i_solarZp", description:"",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:94, size:2, name:"i_solarZn", description:"",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:96, size:2, name:"t_sten", description:"temp of stensat board",unit: "TBC",scalemin:"0",scalemax:"1023",});		
+		variables.push({offset:98, size:2, name:"t_EPS", description:"temp of EPS board",unit: "TBC",scalemin:"0",scalemax:"1023",});		
+		variables.push({offset:100, size:2, name:"t_phone", description:"temp of phoneboard",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:102, size:2, name:"t_ADCS_MHX", description:" temp of ADCS MHX",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:104, size:2, name:"t_router", description:" temp of router board",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:106, size:2, name:"t_solarXp", description:"temp of solar panel X+",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:108, size:2, name:"t_solarXn", description:"temp of solar panel X-",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:110, size:2, name:"t_solarYp", description:"temp of solar panel Y+",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:112, size:2, name:"t_solarYn", description:"temp of solar panel Y-",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:114, size:2, name:"t_solarZp", description:"temp of solar panel Z+",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		variables.push({offset:116, size:2, name:"t_solarZp", description:"temp of solar panel Z-",unit: "TBC",scalemin:"0",scalemax:"1023",});
+		
+		
+		
+		
+	}
 	return variables;
 	
 }
