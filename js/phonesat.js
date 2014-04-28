@@ -1,6 +1,7 @@
 jQuery( document ).ready(function() {
 	jQuery("#parsepacketbutton").click(function() {
 		jQuery("#warnings").hide();
+		jQuery("#theresultsrow").show();
 			jQuery("#warningmessages").html("");
 		
 		ga('send', 'event', 'button', 'click', 'track');
