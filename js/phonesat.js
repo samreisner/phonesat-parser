@@ -84,12 +84,13 @@ jQuery( document ).ready(function() {
 			vars = initializeVariables(PacketType);
 			//console.log(vars);		
 			for (var i = 0; i < vars.length; i++) {
-				jQuery("#results").append(vars[i].name + ": "+getPiece(vars[i],encodedPacket,theOffset)+" <span style='color: #CCC;'>"+vars[i].unit+"</span><br />");
+				jQuery("#results").append("<span data-toggle='tooltip' data-placement='left' title='"+vars[i].description+"'>"+vars[i].name + ":</span> "+getPiece(vars[i],encodedPacket,theOffset)+" <span style='color: #CCC;'>"+vars[i].unit+"</span><br />");
 			}
+			
+			jQuery("[data-toggle=tooltip]").tooltip();
 		
 	});
 	
-
 
 
 
