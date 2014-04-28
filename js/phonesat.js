@@ -30,7 +30,7 @@ jQuery( document ).ready(function() {
 			encodedPacket = RegExp.$8;
 			jQuery("#results").html("");
 			jQuery("#results").append("Preamble: "+Preamble+"<br />");
-			jQuery("#results").append("Packet Type: "+PacketType+"<br />");
+			jQuery("#results").append("Packet Type: "+PacketType+" (Charging)<br />");
 			jQuery("#results").append("Scaled Battery Voltage (V): "+BatteryVoltage+"<br />");						
 			jQuery("#results").append("Phone reboots: "+RebootA+"<br />");						
 			jQuery("#results").append("ACS reboots: "+RebootB+"<br />");						
@@ -46,7 +46,7 @@ jQuery( document ).ready(function() {
 			encodedPacket = RegExp.$5;
 			jQuery("#results").html("");
 			jQuery("#results").append("Preamble: "+Preamble+"<br />");
-			jQuery("#results").append("Packet Type: "+PacketType+"<br />");
+			jQuery("#results").append("Packet Type: "+PacketType+" (bdot <b>CAUTION: NOT IMPLEMENTED</b>)<br />");
 			jQuery("#results").append("Mission Time: "+mtime+"<br />");
 			jQuery("#results").append("Phone Time: "+ptime+"<br />");
 			theOffset = 13;
@@ -58,7 +58,7 @@ jQuery( document ).ready(function() {
 			encodedPacket = RegExp.$5;
 			jQuery("#results").html("");
 			jQuery("#results").append("Preamble: "+Preamble+"<br />");
-			jQuery("#results").append("Packet Type: "+PacketType+"<br />");
+			jQuery("#results").append("Packet Type: "+PacketType+" (pointing <b>CAUTION: NOT IMPLEMENTED</b>)<br />");
 			jQuery("#results").append("Mission Time: "+mtime+"<br />");
 			jQuery("#results").append("UTC Time (uploaded): "+utime+"<br />");
 			theOffset = 13;			
@@ -84,13 +84,9 @@ jQuery( document ).ready(function() {
 			vars = initializeVariables(PacketType);
 			//console.log(vars);		
 			for (var i = 0; i < vars.length; i++) {
-				jQuery("#results").append(vars[i].name + ": "+getPiece(vars[i],encodedPacket,theOffset)+"<br />");
+				jQuery("#results").append(vars[i].name + ": "+getPiece(vars[i],encodedPacket,theOffset)+" <span style='color: #CCC;'>"+vars[i].unit+"</span><br />");
 			}
 		
-		
-
-		
-	
 	});
 	
 
@@ -102,16 +98,12 @@ jQuery( document ).ready(function() {
 
 function getPiece(theVar,theString,offset) {
 	var thisVarString = theString.substr(((theVar.offset-offset)),(theVar.size));
-//	console.log(thisVarString.charCodeAt(0) + "; "+thisVarString.charCodeAt(1));
-//	return "TBD";
-	var numBytes = theVar.size;
-	
+	var numBytes = theVar.size;	
 	var places = 1;
 	var unscaled = 0;
 	var max = 1;
 	for (i = (numBytes-1); i>=0; i--) {
 		max*=224;
-//		console.log("Substring "+i+": "+thisVarString.substr((8*i),8));
 		var thisChar = thisVarString.substr(i,1);
 		console.log (thisChar +" is: "+thisChar.charCodeAt(0));
 		unscaled += (thisChar.charCodeAt(0) - 32) * places;
@@ -129,106 +121,63 @@ function getPiece(theVar,theString,offset) {
 }
 
 
-/*
 
-
-
-Full Binary String
-01010101
-(00110000)(11110001)
- 00110000  11110001
-
-(00100000)(01001110)
- 00100000  01001110
- 
- 
-(01100000)(01011011)
- 01100000  01011011
-
-
-mag_bef_x: 0.07559390943877552 -unscaled is: 3793 (0011000011110001)  48 241  / 16  209  3793
-gyro_bef_x: 0.0009167729591836735 -unscaled is: 46 (0010000001001110) 32 78 / 0 46   46   
-magP_actHI_x: 0.28689014668367346 -unscaled is: 14395 (0110000001011011)
-magP_actMed_x: 0.2860730229591837 -unscaled is: 14354 (0110000000110010)
-
-
-
-
-011000000011001001100000101100000110000001100001001000000100000000100000010100010010000001011111001000000110011100110000101001010010000000110001001000000010101100100000111100010010000011111110010100101101010100100110111101111100011000101100111010110110110110110111010011000010000011101101001000001110101100100000110000110010000011110000100000000110011101000000100000011110000010000001011110101011000010001001111101111000000111111011110001001000001010011000100000101110000010000011100110001000001100011101111101010010000010000011011010001000000010000000100000001000000010100001101000011001001100100100110100010000000010001001111100111111011101010101000100110100000010000000100000001000000010000000100000001000001101110010110001
-
-
-Substring 1: 11110001 phonesat.js:84
-Substring 0: 00110000 phonesat.js:84
-Substring 1: 01001110 phonesat.js:84
-Substring 0: 00100000 phonesat.js:84
-Substring 1: 01011011 phonesat.js:84
-Substring 0: 01100000 phonesat.js:84
-Substring 1: 00110010 phonesat.js:84
-Substring 0: 01100000 phonesat.js:84
-Substring 1: 10110000 phonesat.js:84
-Substring 0: 01100000 phonesat.js:84
-Substring 1: 01100001 phonesat.js:84
-Substring 0: 01100000 phonesat.js:84
-Substring 1: 01000000 phonesat.js:84
-Substring 0: 00100000 
-
-*/
 function initializeVariables(PacketType) {
 	variables = [];
 
 	if (PacketType == "C") {
-	variables[0] = {offset:17, size:2, name:"mag_bef_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[1] = {offset:19, size:2, name:"gyro_bef_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[2] = {offset:21, size:2, name:"magP_actHI_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[3] = {offset:23, size:2, name:"magP_actMed_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[4] = {offset:25, size:2, name:"magN_actHI_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[5] = {offset:27, size:2, name:"magN_actMed_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[6] = {offset:29, size:2, name:"gyroP_actHI_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[7] = {offset:31, size:2, name:"gyroP_actMed_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[8] = {offset:33, size:2, name:"gyroN_actHI_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[9] = {offset:35, size:2, name:"gyroN_actMed_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[10] = {offset:37, size:2, name:"mag_aft_x", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[11] = {offset:39, size:2, name:"gyro_aft_x", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[12] = {offset:41, size:2, name:"mag_bef_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[13] = {offset:43, size:2, name:"gyro_bef_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[14] = {offset:45, size:2, name:"magP_actHI_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[15] = {offset:47, size:2, name:"magP_actMed_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[16] = {offset:49, size:2, name:"magN_actHI_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[17] = {offset:51, size:2, name:"magN_actMed_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[18] = {offset:53, size:2, name:"gyroP_actHI_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[19] = {offset:55, size:2, name:"gyroP_actMed_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[20] = {offset:57, size:2, name:"gyroN_actHI_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[21] = {offset:59, size:2, name:"gyroN_actMed_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[22] = {offset:61, size:2, name:"mag_aft_y", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[23] = {offset:63, size:2, name:"gyro_aft_y", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[24] = {offset:65, size:2, name:"mag_bef_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[25] = {offset:67, size:2, name:"gyro_bef_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[26] = {offset:69, size:2, name:"magP_actHI_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[27] = {offset:71, size:2, name:"magP_actMed_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[28] = {offset:73, size:2, name:"magN_actHI_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[29] = {offset:75, size:2, name:"magN_actMed_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[30] = {offset:77, size:2, name:"gyroP_actHI_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[31] = {offset:79, size:2, name:"gyroP_actMed_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[32] = {offset:81, size:2, name:"gyroN_actHI_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[33] = {offset:83, size:2, name:"gyroN_actMed_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[34] = {offset:85, size:2, name:"mag_aft_z", description:"",unit: "~",scalemin:"-999",scalemax:"999",};
-	variables[35] = {offset:87, size:2, name:"gyro_aft_z", description:"",unit: "~",scalemin:"-20",scalemax:"20",};
-	variables[36] = {offset:89, size:2, name:"i_MHX", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[37] = {offset:91, size:2, name:"i_ADCS", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[38] = {offset:93, size:2, name:"i_solarXp", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[39] = {offset:95, size:2, name:"i_solarXn", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[40] = {offset:97, size:2, name:"i_solarYp", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[41] = {offset:99, size:2, name:"i_solarYn", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[42] = {offset:101, size:2, name:"i_solarZp", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[43] = {offset:103, size:2, name:"i_solarZn", description:"",unit: "~",scalemin:"0",scalemax:"1023",};
-	variables[44] = {offset:105, size:2, name:"t_phone", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[45] = {offset:107, size:2, name:"t_ADCS_MHX", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[46] = {offset:109, size:2, name:"t_solarXp", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[47] = {offset:111, size:2, name:"t_solarXn", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[48] = {offset:113, size:2, name:"t_solarYp", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[49] = {offset:115, size:2, name:"t_solarYn", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[50] = {offset:117, size:2, name:"t_solarZp", description:"",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[51] = {offset:119, size:2, name:"t_solarZn", description:"",unit: "C",scalemin:"0",scalemax:"1023",};	
+	variables[0] = {offset:17, size:2, name:"mag_bef_x", description:"Magnetic Field X - before test",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[1] = {offset:19, size:2, name:"gyro_bef_x", description:"Rotation speed X - before test",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[2] = {offset:21, size:2, name:"magP_actHI_x", description:"Magnetic Field-X: coil active +X Hi(255)",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[3] = {offset:23, size:2, name:"magP_actMed_x", description:"Magnetic Field-X: coil active +X Med(127)",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[4] = {offset:25, size:2, name:"magN_actHI_x", description:"Magnetic Field-X: coil active -X Hi(255)",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[5] = {offset:27, size:2, name:"magN_actMed_x", description:"Magnetic Field-X: coil active -X Med(127)",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[6] = {offset:29, size:2, name:"gyroP_actHI_x", description:"Rotation Speed-X: RW active +X Hi(255)",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[7] = {offset:31, size:2, name:"gyroP_actMed_x", description:"Rotation Speed-X: RW active +X Med(127)",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[8] = {offset:33, size:2, name:"gyroN_actHI_x", description:"Rotation Speed-X: RW active -X Hi(255)",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[9] = {offset:35, size:2, name:"gyroN_actMed_x", description:"Rotation Speed-X: RW active -X Med(127)",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[10] = {offset:37, size:2, name:"mag_aft_x", description:"Magnetic Field-X after test",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[11] = {offset:39, size:2, name:"gyro_aft_x", description:"Rotation speed x: after test",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[12] = {offset:41, size:2, name:"mag_bef_y", description:"Magnetic Field Y Before Test",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[13] = {offset:43, size:2, name:"gyro_bef_y", description:"Rotation Speed Y Before Test",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[14] = {offset:45, size:2, name:"magP_actHI_y", description:"Magnetic Field Y: Coil active +X Hi (255)",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[15] = {offset:47, size:2, name:"magP_actMed_y", description:"Magnetic Field Y: Coil active +X Med (127)",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[16] = {offset:49, size:2, name:"magN_actHI_y", description:"Magnetic Field Y: Coil ative -X Hi (255)",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[17] = {offset:51, size:2, name:"magN_actMed_y", description:"Magnetic Field Y: Coil ative -X Med(127)",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[18] = {offset:53, size:2, name:"gyroP_actHI_y", description:"Rotation Speed Y: RW active +X Hi (255)",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[19] = {offset:55, size:2, name:"gyroP_actMed_y", description:"Rotation Speed Y: RW active +X Med (127)",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[20] = {offset:57, size:2, name:"gyroN_actHI_y", description:"Rotation Speed Y: RW active -X Hi (255)",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[21] = {offset:59, size:2, name:"gyroN_actMed_y", description:"Rotation Speed Y: RW active -X Med (127)",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[22] = {offset:61, size:2, name:"mag_aft_y", description:"Magnetic field Y - after test",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[23] = {offset:63, size:2, name:"gyro_aft_y", description:"Rotation Speed Y - after Test",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[24] = {offset:65, size:2, name:"mag_bef_z", description:"Magnetic field Z - before test",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[25] = {offset:67, size:2, name:"gyro_bef_z", description:"Rotation Speed Z - before test",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[26] = {offset:69, size:2, name:"magP_actHI_z", description:"Magnetic Field Z coil active +X Hi(255)",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[27] = {offset:71, size:2, name:"magP_actMed_z", description:"Magnetic Field Z coil active -X Med(127)",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[28] = {offset:73, size:2, name:"magN_actHI_z", description:"Magnetic Field Z coil active -X Hi (255)",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[29] = {offset:75, size:2, name:"magN_actMed_z", description:"Magnetic Field Z coil active -X Med(127)",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[30] = {offset:77, size:2, name:"gyroP_actHI_z", description:"Rotation Speed Z: RW active +X Hi(255)",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[31] = {offset:79, size:2, name:"gyroP_actMed_z", description:"Rotation Speed Z: RW active +X Med(127)",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[32] = {offset:81, size:2, name:"gyroN_actHI_z", description:"Rotation Speed Z: RW active -X Hi(255)",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[33] = {offset:83, size:2, name:"gyroN_actMed_z", description:"Rotation Speed Z: RW active -X Med(255)",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[34] = {offset:85, size:2, name:"mag_aft_z", description:"Magnetic Field Z after test",unit: "uT",scalemin:"-999",scalemax:"999",};
+	variables[35] = {offset:87, size:2, name:"gyro_aft_z", description:"Rotation Speed Z after test",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
+	variables[36] = {offset:89, size:2, name:"i_MHX", description:"current of MHX",unit: "mAmp",scalemin:"0",scalemax:"1023",};
+	variables[37] = {offset:91, size:2, name:"i_ADCS", description:"current of ADCS",unit: "mAmp",scalemin:"0",scalemax:"1023",};
+	variables[38] = {offset:93, size:2, name:"i_solarXp", description:"current of Solar Panel X+",unit: "mAmp",scalemin:"0",scalemax:"1023",};
+	variables[39] = {offset:95, size:2, name:"i_solarXn", description:"current of solar panel X-",unit: "mAmp",scalemin:"0",scalemax:"1023",};
+	variables[40] = {offset:97, size:2, name:"i_solarYp", description:"current of solar panel Y+",unit: "mAmp",scalemin:"0",scalemax:"1023",};
+	variables[41] = {offset:99, size:2, name:"i_solarYn", description:"current of solar panel Y-",unit: "mAmp",scalemin:"0",scalemax:"1023",};
+	variables[42] = {offset:101, size:2, name:"i_solarZp", description:"current of solar panel Z+",unit: "mAmp",scalemin:"0",scalemax:"1023",};
+	variables[43] = {offset:103, size:2, name:"i_solarZn", description:"current of solar panel Z-",unit: "mAmp",scalemin:"0",scalemax:"1023",};
+	variables[44] = {offset:105, size:2, name:"t_phone", description:"temperature of phone board",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[45] = {offset:107, size:2, name:"t_ADCS_MHX", description:"temperature of ADCS_MHX board",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[46] = {offset:109, size:2, name:"t_solarXp", description:"temperature of solar panel X+",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[47] = {offset:111, size:2, name:"t_solarXn", description:"temperature of solar panel X-",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[48] = {offset:113, size:2, name:"t_solarYp", description:"temperature of solar panel Y+",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[49] = {offset:115, size:2, name:"t_solarYn", description:"temperature of solar panel Y-",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[50] = {offset:117, size:2, name:"t_solarZp", description:"temperature of solar panel Z+",unit: "C",scalemin:"0",scalemax:"1023",};
+	variables[51] = {offset:119, size:2, name:"t_solarZn", description:"temperature of solar panel Z-",unit: "C",scalemin:"0",scalemax:"1023",};	
 	} // Charge packet
 	
 	if ((PacketType=="A") || (PacketType=="D")) {
