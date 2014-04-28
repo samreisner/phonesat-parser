@@ -123,7 +123,7 @@ function getPiece(theVar,theString,offset) {
 	var range =(theVar.scalemax-theVar.scalemin);
 	var number = (range*scaled)-(0-theVar.scalemin);	
 //	return ((theVar.scalemax-theVar.scalemin)*scaled)-theVar.scalemax;
-	return number+" "+(range*scaled)-(0-theVar.scalemin)+" Unshifted: "+(range*scaled)+" - percentage: "+unscaled/max+" -unscaled is: "+unscaled+" ("+theString.substr(((theVar.offset-offset)*8),(theVar.size)*8)+")";
+//	return number+" "+(range*scaled)-(0-theVar.scalemin)+" Unshifted: "+(range*scaled)+" - percentage: "+unscaled/max+" -unscaled is: "+unscaled+" ("+theString.substr(((theVar.offset-offset)*8),(theVar.size)*8)+")";
 
 	return number.toFixed(4);
 }
