@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="windows-1252" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="./ico/favicon.ico">
+
+    <title>PhoneSat Parser</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="./css/phonesat.css" rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy this line! -->
+    <!--[if lt IE 9]><script src="./js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+	<script>
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', 'UA-29594867-2', 'samreisner.com');
+	  ga('send', 'pageview');
+
+	</script>
+    
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">PhoneSat Parser</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+        <h2>Parse those packets!</h2>
+        <p>This site lets you upload and parse packets received from <a href="http://phonesat.org/">PhoneSat</a> satellites such as <a href="http://kicksat.net/">KickSat</a> and <a href="http://phonesat.org/">PhoneSat</a> itself.</p>
+        <p>This project is unaffiliated with the folks involved with PhoneSat or KickSat.  It was created by using the <a href="http://phonesat.org/packet_description_files/WebReadyViewIndicator.aspx.html">PhoneSat packet description</a>.</p>
+        <p>We encourage you to submit any packets you find, including the raw data, to the appropriate project team.  This site is just for your convenience, so you can interpret the data you have received.</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-12">
+          <h4>Packet Data:</h4>
+          <p>Please enter either the hex data or the ASCII string for the packet, and select the satellite type</p>
+          <form>
+          	<textarea name="rawpacket" id="rawpacket" class="col-md-12"></textarea>
+          	<label class="radio-inline">
+			  <input type="radio" id="inlineCheckbox1" name="satelliteName" value="KickSat" checked> KickSat
+			</label>
+			<label class="radio-inline">
+			  <input type="radio" id="inlineCheckbox2"  name="satelliteName" value="PhoneSat"> PhoneSat
+			</label>
+
+          <p><a class="btn btn-default" href="#" id="parsepacketbutton" role="button">Parse &raquo;</a></p>
+          </form>
+
+        </div>
+      </div>
+      
+    <div class="container" id = "warnings" style="display: none; color: red;">
+      <!-- Example row of columns -->
+      <div class="row" >
+        <div class="col-md-12">
+			<h3>Warnings:</h3>
+		</div>      	
+        <div class="col-md-12" id="warningmessages">
+		</div>
+	  </div>
+	</div>
+      
+      <div class="row" style="display: none;" id="theresultsrow">
+        <div class="col-md-12">
+          <h4>Results:</h4>
+          <p><pre id="results"></pre></p>
+        </div>
+      </div>
+
+
+		
+      <hr>
+
+      <footer>
+        <p><a href='http://samreisner.com/'>&copy; Sam Reisner 2014</a><br />
+       Licensed under <a href="http://www.gnu.org/licenses/gpl-2.0.html">GPLv2</a><br />
+        Available on <a href="https://github.com/samreisner/phonesat-parser/">GitHub</a></p>
+      </footer>
+    </div> <!-- /container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/phonesat.js"></script>
+  </body>
+</html>
