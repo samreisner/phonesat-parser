@@ -20,10 +20,18 @@ jQuery( document ).ready(function() {
 		var mtime;
 		var ptime;
 		var utime;
+		var Satellite = "KickSat";
 		
-		var pattC = /.*?(P4)(C),(\d+?),(\d+?),(\d+?),(\d+?),(.)(.*)/g;
-		var pattB = /.*?(P4)(A|D)(.....)(.....)(.*)/g;
-		var pattP = /.*?(P4)(P)(.....)(.....)(.*)/g;
+		if (jQuery('input[name=satelliteName]:checked').val() == "KickSat") {
+			var pattC = /.*?(P4)(C),(\d+?),(\d+?),(\d+?),(\d+?),(.)(.*)/g;
+			var pattB = /.*?(P4)(A|D)(.....)(.....)(.*)/g;
+			var pattP = /.*?(P4)(P)(.....)(.....)(.*)/g;
+		} else {
+			var pattC = /.*?(P4)(C),(\d+?),(\d+?),(\d+?),(.)(.*)/g;
+			var pattB = /.*?(P4)(A|D)(.....)(.....)(.*)/g;
+			var pattP = /.*?(P4)(P)(.....)(.....)(.*)/g;
+			Satellite = "PhoneSat";
+		}
 		var pattH = /.*?50.*?/g;
 		if (result=pattC.exec(rawPacket)) {
 			ga('send', 'event', 'track', 'track', 'track',1);				
@@ -32,16 +40,22 @@ jQuery( document ).ready(function() {
 			BatteryVoltage = RegExp.$3;
 			RebootA = RegExp.$4;
 			RebootB = RegExp.$5;
-			Deployed = RegExp.$6;
-			SatID = (toDec(RegExp.$7))-32;
-			encodedPacket = RegExp.$8;
+			if (Satellite=="KickSat") {
+				Deployed = RegExp.$6;
+				SatID = (toDec(RegExp.$7))-32;
+				encodedPacket = RegExp.$8;
+			} else {
+				SatID = (toDec(RegExp.$6))-32;
+				encodedPacket = RegExp.$7;			
+			}
 			jQuery("#results").html("");
 			jQuery("#results").append("Preamble: "+Preamble+"<br />");
 			jQuery("#results").append("Packet Type: "+PacketType+" (Charging)<br />");
 			jQuery("#results").append("Scaled Battery Voltage (V): "+BatteryVoltage+"<br />");						
 			jQuery("#results").append("Phone reboots: "+RebootA+"<br />");						
 			jQuery("#results").append("ACS reboots: "+RebootB+"<br />");						
-			jQuery("#results").append("Deployed Indicator: "+Deployed+"<br />");						
+			if (Satellite=="KickSat")
+				jQuery("#results").append("Deployed Indicator: "+Deployed+"<br />");						
 			jQuery("#results").append("Satellite ID: "+SatID+"<br />");		
 			theOffset = 17;
 			
