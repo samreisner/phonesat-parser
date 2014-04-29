@@ -169,7 +169,7 @@ jQuery( document ).ready(function() {
 });
 
 function toDec(c) {
-	console.log("Checking: "+c);
+
 	if (c.charCodeAt(0) <= 255)
 		return c.charCodeAt(0);
 	theMap = Array();
@@ -203,7 +203,7 @@ function toDec(c) {
 	
 	if (typeof theMap[c.charCodeAt()] === 'undefined') {
 		// variable is undefined
-		console.log("Did not find in map: "+c.charCodeAt());
+		//console.log("Did not find in map: "+c.charCodeAt());
 		return c.charCodeAt();
 	} else
 		return theMap[c.charCodeAt()];
@@ -490,23 +490,23 @@ function getPiece(theVar,theString,offset) {
 	for (i = (numBytes-1); i>=0; i--) {
 		max*=224;
 		var thisChar = thisVarString.substr(i,1);
-		console.log("Thischar: "+thisChar);
+		//console.log("Thischar: "+thisChar);
 
 		if ((toDec(thisChar) > 255) || (toDec(thisChar) < 32)) {
 			jQuery("#warnings").show();
 			jQuery("#warningmessages").append("Character '"+thisChar+"' out of range: Decimal Value should be between 0-255, but we got: "+toDec(thisChar)+".  Bad data ahead<br />");
 		}
-		console.log (thisChar +" is: "+toDec(thisChar));
+		//console.log (thisChar +" is: "+toDec(thisChar));
 		unscaled += (toDec(thisChar) - 32) * places;
 		places*=224;
-		console.log ("Unscaled is: "+unscaled);
+		//console.log ("Unscaled is: "+unscaled);
 		
 	}
 	var scaled = unscaled/max;
-	console.log("Scaled: "+scaled);
+	//console.log("Scaled: "+scaled);
 	var range =(theVar.scalemax-theVar.scalemin);
-	console.log("Range: "+range);
-	console.log("R*S: "+(range*scaled));
+	//console.log("Range: "+range);
+	//console.log("R*S: "+(range*scaled));
 	
 	var number = (range*scaled)-(0-theVar.scalemin);	
 //	return ((theVar.scalemax-theVar.scalemin)*scaled)-theVar.scalemax;
