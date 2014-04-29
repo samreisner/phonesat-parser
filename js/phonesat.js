@@ -262,7 +262,7 @@ function getPiece(theVar,theString,offset) {
 		//console.log ("Unscaled is: "+unscaled);
 		
 	}
-	var scaled = unscaled/max;
+	var scaled = unscaled/(max -1);
 	//console.log("Scaled: "+scaled);
 	var range =(theVar.scalemax-theVar.scalemin);
 	//console.log("Range: "+range);
