@@ -39,6 +39,7 @@ jQuery( document ).ready(function() {
 		var lines = rawPacket.split("\n");
 		pattL = /.*\d+.*?\>(.*)$/
 		var theHex = "";
+		var theHexB = "";
 		for (i=0; i<lines.length; i++) {
 
 			if (result = pattL.exec(lines[i])) {
@@ -47,9 +48,11 @@ jQuery( document ).ready(function() {
 
 		}
 		theHex = theHex.replace(/\s/g, '');
+		theHexB = rawPacket.replace(/\s/g,'');
 
 
-		
+
+		// Match 'P4*,' in a string
 		var pattH = /.*?5034..2c.*?/gi;
 		
 
@@ -135,6 +138,22 @@ jQuery( document ).ready(function() {
 			str = "";
 			for (i=0; i<theHex.length; i+=2) {
 				str += String.fromCharCode(parseInt(theHex.substr(i, 2), 16));
+			}
+			jQuery("#rawpacket").val(str);
+			ga('send', 'event', 'track', 'track', 'track',4);		
+
+			jQuery("#parsepacketbutton").click();
+			
+			
+		} else if (result=pattH.exec(theHexB)) {
+//			var os=require('os')
+			//alert ("found hex");
+
+
+			//alert(theHex);
+			str = "";
+			for (i=0; i<theHexB.length; i+=2) {
+				str += String.fromCharCode(parseInt(theHexB.substr(i, 2), 16));
 			}
 			jQuery("#rawpacket").val(str);
 			ga('send', 'event', 'track', 'track', 'track',4);		
