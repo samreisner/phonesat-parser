@@ -23,6 +23,7 @@ jQuery( document ).ready(function() {
 		var Satellite = "KickSat";
 		
 		if (jQuery('input[name=satelliteName]:checked').val() == "KickSat") {
+
 			var pattC = /.*?(P4)(C),(\d+?),(\d+?),(\d+?),(\d+?),(.)(.*)/g;
 			var pattB = /.*?(P4)(A|D)(.....)(.....)(.*)/g;
 			var pattP = /.*?(P4)(P)(.....)(.....)(.*)/g;
@@ -34,19 +35,28 @@ jQuery( document ).ready(function() {
 		}
 		var pattH = /.*?50.*?/g;
 		if (result=pattC.exec(rawPacket)) {
-			ga('send', 'event', 'track', 'track', 'track',1);				
+	
+
 			Preamble = RegExp.$1;
 			PacketType = RegExp.$2;
 			BatteryVoltage = RegExp.$3;
 			RebootA = RegExp.$4;
 			RebootB = RegExp.$5;
+			Deployed = RegExp.$6;
+			SatID = (toDec(RegExp.$7))-32;
+			encodedPacket = RegExp.$8;
+			var six = RegExp.$6;
+			var seven = RegExp.$7;
+			var eight;
+			if (typeof RegExp.$8 != 'undefined')
+				eight = RegExp.$8;
 			if (Satellite=="KickSat") {
-				Deployed = RegExp.$6;
-				SatID = (toDec(RegExp.$7))-32;
-				encodedPacket = RegExp.$8;
+				Deployed = six;
+				SatID = (toDec(seven))-32;
+				encodedPacket = eight;
 			} else {
-				SatID = (toDec(RegExp.$6))-32;
-				encodedPacket = RegExp.$7;			
+				SatID = (toDec(six))-32;
+				encodedPacket = seven;			
 			}
 			jQuery("#results").html("");
 			jQuery("#results").append("Preamble: "+Preamble+"<br />");
@@ -58,9 +68,8 @@ jQuery( document ).ready(function() {
 				jQuery("#results").append("Deployed Indicator: "+Deployed+"<br />");						
 			jQuery("#results").append("Satellite ID: "+SatID+"<br />");		
 			theOffset = 17;
-			
+			ga('send', 'event', 'track', 'track', 'track',1);				
 		} else if (result=pattB.exec(rawPacket)) {
-			ga('send', 'event', 'track', 'track', 'track',2);		
 			Preamble = RegExp.$1;
 			PacketType = RegExp.$2;
 			mtime = RegExp.$3;
@@ -77,8 +86,9 @@ jQuery( document ).ready(function() {
 			jQuery("#results").append("Mission Time: "+mtime+"<br />");
 			jQuery("#results").append("Phone Time: "+ptime+"<br />");
 			theOffset = 13;
+			ga('send', 'event', 'track', 'track', 'track',2);		
+			
 		} else if (result=pattP.exec(rawPacket)) {
-			ga('send', 'event', 'track', 'track', 'track',3);		
 			Preamble = RegExp.$1;
 			PacketType = RegExp.$2;
 			mtime = RegExp.$3;
@@ -94,6 +104,8 @@ jQuery( document ).ready(function() {
 			jQuery("#results").append("Mission Time: "+mtime+"<br />");
 			jQuery("#results").append("UTC Time (uploaded): "+utime+"<br />");
 			theOffset = 13;			
+			ga('send', 'event', 'track', 'track', 'track',3);		
+			
 		} else if (result=pattH.exec(rawPacket)) {
 //			var os=require('os')
 			//alert ("found hex");
@@ -114,12 +126,16 @@ jQuery( document ).ready(function() {
 				str += String.fromCharCode(parseInt(theHex.substr(i, 2), 16));
 			}
 			jQuery("#rawpacket").val(str);
+			ga('send', 'event', 'track', 'track', 'track',4);		
+
 			jQuery("#parsepacketbutton").click();
 			
+			
 		} else {
-			ga('send', 'event', 'track', 'track', 'track',4);		
 			jQuery("#warnings").show();
 			jQuery("#warningmessages").append("Did not find preamble of 'P4[C|P|A|D] with enough additional information to decode the contents.<br />");
+			ga('send', 'event', 'track', 'track', 'track',5);		
+
 		}					
 			
 
@@ -153,6 +169,7 @@ jQuery( document ).ready(function() {
 });
 
 function toDec(c) {
+
 	if (c.charCodeAt(0) <= 255)
 		return c.charCodeAt(0);
 	theMap = Array();
@@ -186,7 +203,7 @@ function toDec(c) {
 	
 	if (typeof theMap[c.charCodeAt()] === 'undefined') {
 		// variable is undefined
-		console.log("Did not find in map: "+c.charCodeAt());
+		//console.log("Did not find in map: "+c.charCodeAt());
 		return c.charCodeAt();
 	} else
 		return theMap[c.charCodeAt()];
@@ -473,23 +490,23 @@ function getPiece(theVar,theString,offset) {
 	for (i = (numBytes-1); i>=0; i--) {
 		max*=224;
 		var thisChar = thisVarString.substr(i,1);
-		console.log("Thischar: "+thisChar);
+		//console.log("Thischar: "+thisChar);
 
 		if ((toDec(thisChar) > 255) || (toDec(thisChar) < 32)) {
 			jQuery("#warnings").show();
 			jQuery("#warningmessages").append("Character '"+thisChar+"' out of range: Decimal Value should be between 0-255, but we got: "+toDec(thisChar)+".  Bad data ahead<br />");
 		}
-		console.log (thisChar +" is: "+toDec(thisChar));
+		//console.log (thisChar +" is: "+toDec(thisChar));
 		unscaled += (toDec(thisChar) - 32) * places;
 		places*=224;
-		console.log ("Unscaled is: "+unscaled);
+		//console.log ("Unscaled is: "+unscaled);
 		
 	}
 	var scaled = unscaled/max;
-	console.log("Scaled: "+scaled);
+	//console.log("Scaled: "+scaled);
 	var range =(theVar.scalemax-theVar.scalemin);
-	console.log("Range: "+range);
-	console.log("R*S: "+(range*scaled));
+	//console.log("Range: "+range);
+	//console.log("R*S: "+(range*scaled));
 	
 	var number = (range*scaled)-(0-theVar.scalemin);	
 //	return ((theVar.scalemax-theVar.scalemin)*scaled)-theVar.scalemax;

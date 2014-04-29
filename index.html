@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="windows-1252" />
+    <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
@@ -11,7 +11,7 @@
     <title>PhoneSat Parser</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/bootstrap.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
     <link href="./css/phonesat.css" rel="stylesheet">
@@ -66,38 +66,53 @@
 
     <div class="container">
       <!-- Example row of columns -->
+          <form>
+
       <div class="row">
-        <div class="col-md-12">
+        <div class=".col-md-6 .col-md-offset-3">
           <h4>Packet Data:</h4>
           <p>Please enter either the hex data or the ASCII string for the packet, and select the satellite type</p>
-          <form>
-          	<textarea name="rawpacket" id="rawpacket" class="col-md-12"></textarea>
+		</div>
+	   </div>
+      <div class="row">
+        <div class=".col-md-6 .col-md-offset-3">
+          	<textarea name="rawpacket" id="rawpacket" class="col-md-6"></textarea>
+		</div>
+	   </div>
+      <div class="row">
+        <div class=".col-md-6 .col-md-offset-3">
           	<label class="radio-inline">
 			  <input type="radio" id="inlineCheckbox1" name="satelliteName" value="KickSat" checked> KickSat
 			</label>
 			<label class="radio-inline">
 			  <input type="radio" id="inlineCheckbox2"  name="satelliteName" value="PhoneSat"> PhoneSat
 			</label>
-
+		</div>
+	   </div>
+      <div class="row">
+        <div class=".col-md-6 .col-md-offset-3">
           <p><a class="btn btn-default" href="#" id="parsepacketbutton" role="button">Parse &raquo;</a></p>
-          </form>
+		</div>
+	   </div>
 
-        </div>
+
+    </form>
+
       </div>
       
     <div class="container" id = "warnings" style="display: none; color: red;">
       <!-- Example row of columns -->
       <div class="row" >
-        <div class="col-md-12">
+        <div class=".col-md-6 .col-md-offset-3">
 			<h3>Warnings:</h3>
 		</div>      	
-        <div class="col-md-12" id="warningmessages">
+        <div class=".col-md-6 .col-md-offset-3" id="warningmessages">
 		</div>
 	  </div>
 	</div>
       
       <div class="row" style="display: none;" id="theresultsrow">
-        <div class="col-md-12">
+        <div class=".col-md-6 .col-md-offset-3">
           <h4>Results:</h4>
           <p><pre id="results"></pre></p>
         </div>
