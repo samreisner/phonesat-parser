@@ -84,7 +84,7 @@ jQuery( document ).ready(function() {
 			jQuery("#results").html("");
 			jQuery("#results").append("Preamble: "+Preamble+"<br />");
 			jQuery("#results").append("Packet Type: "+PacketType+" (Charging)<br />");
-			jQuery("#results").append("Scaled Battery Voltage (V): "+BatteryVoltage+"<br />");						
+			jQuery("#results").append("Scaled Battery Voltage (V): "+BatteryVoltage+" <span style='color:555;'><i>Measured: </i>"+(BatteryVoltage/102.3).toFixed(5)+"</span><br />");						
 			jQuery("#results").append("Phone reboots: "+RebootA+"<br />");						
 			jQuery("#results").append("ACS reboots: "+RebootB+"<br />");						
 			if (Satellite=="KickSat")
@@ -185,10 +185,13 @@ jQuery( document ).ready(function() {
 			vars = initializeVariables(PacketType);
 			//console.log(vars);		
 			for (var i = 0; i < vars.length; i++) {
-				jQuery("#results").append("<span data-toggle='tooltip' data-placement='right' title='"+vars[i].description+"'>"+vars[i].name + ":</span> "+getPiece(vars[i],encodedPacket,theOffset)+" <span style='color: #CCC;'>"+vars[i].unit+"</span><br />");
+				var theValue = getPiece(vars[i],encodedPacket,theOffset);
+				jQuery("#results").append("<span data-toggle='tooltip' data-placement='right' title='"+vars[i].description+"'>"+vars[i].name + ":</span> "+theValue+" <span style='color: #CCC;'>"+vars[i].unit+"</span> "+additionalScaling(vars[i],theValue)+"<br />");
 			}
 			
 			jQuery("[data-toggle=tooltip]").tooltip();
+			var d1 = new Date();
+			jQuery("#results").append("\nWeb Parser v.3 - http://samreisner.com/phonesat-parser/\nMode Selected: "+Satellite+"\nReport Generated at "+d1.toUTCString());
 		
 	});
 	
@@ -272,9 +275,14 @@ function getPiece(theVar,theString,offset) {
 //	return ((theVar.scalemax-theVar.scalemin)*scaled)-theVar.scalemax;
 //	return number+" "+(range*scaled)-(0-theVar.scalemin)+" Unshifted: "+(range*scaled)+" - percentage: "+unscaled/max+" -unscaled is: "+unscaled+" ("+theString.substr(((theVar.offset-offset)*8),(theVar.size)*8)+")";
 
-	return number.toFixed(4);
+	return number.toFixed(5);
 }
 
+function additionalScaling(theVar,theValue) {
+	if (theVar.additionalScaling != undefined) {
+		return " <span style='color: #555;'><i>Measured: </i>"+theVar.additionalScaling(theValue).toFixed(5) +" "+theVar.unit+"</span>";
+	} else return "";
+}
 
 
 function initializeVariables(PacketType) {
@@ -317,22 +325,22 @@ function initializeVariables(PacketType) {
 	variables[33] = {offset:83, size:2, name:"gyroN_actMed_z", description:"Rotation Speed Z: RW active -X Med(255)",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
 	variables[34] = {offset:85, size:2, name:"mag_aft_z", description:"Magnetic Field Z after test",unit: "uT",scalemin:"-999",scalemax:"999",};
 	variables[35] = {offset:87, size:2, name:"gyro_aft_z", description:"Rotation Speed Z after test",unit: "10*rad/s",scalemin:"-20",scalemax:"20",};
-	variables[36] = {offset:89, size:2, name:"i_MHX", description:"current of MHX",unit: "mAmp",scalemin:"0",scalemax:"1023",};
-	variables[37] = {offset:91, size:2, name:"i_ADCS", description:"current of ADCS",unit: "mAmp",scalemin:"0",scalemax:"1023",};
+	variables[36] = {offset:89, size:2, name:"i_MHX", description:"current of MHX",unit: "mAmp",scalemin:"0",scalemax:"1023",additionalScaling:function(v) { return v*0.0021;},};
+	variables[37] = {offset:91, size:2, name:"i_ADCS", description:"current of ADCS",unit: "mAmp",scalemin:"0",scalemax:"1023",additionalScaling:function(v) { return v*0.00019167;},};
 	variables[38] = {offset:93, size:2, name:"i_solarXp", description:"current of Solar Panel X+",unit: "mAmp",scalemin:"0",scalemax:"1023",};
 	variables[39] = {offset:95, size:2, name:"i_solarXn", description:"current of solar panel X-",unit: "mAmp",scalemin:"0",scalemax:"1023",};
 	variables[40] = {offset:97, size:2, name:"i_solarYp", description:"current of solar panel Y+",unit: "mAmp",scalemin:"0",scalemax:"1023",};
 	variables[41] = {offset:99, size:2, name:"i_solarYn", description:"current of solar panel Y-",unit: "mAmp",scalemin:"0",scalemax:"1023",};
 	variables[42] = {offset:101, size:2, name:"i_solarZp", description:"current of solar panel Z+",unit: "mAmp",scalemin:"0",scalemax:"1023",};
 	variables[43] = {offset:103, size:2, name:"i_solarZn", description:"current of solar panel Z-",unit: "mAmp",scalemin:"0",scalemax:"1023",};
-	variables[44] = {offset:105, size:2, name:"t_phone", description:"temperature of phone board",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[45] = {offset:107, size:2, name:"t_ADCS_MHX", description:"temperature of ADCS_MHX board",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[46] = {offset:109, size:2, name:"t_solarXp", description:"temperature of solar panel X+",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[47] = {offset:111, size:2, name:"t_solarXn", description:"temperature of solar panel X-",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[48] = {offset:113, size:2, name:"t_solarYp", description:"temperature of solar panel Y+",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[49] = {offset:115, size:2, name:"t_solarYn", description:"temperature of solar panel Y-",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[50] = {offset:117, size:2, name:"t_solarZp", description:"temperature of solar panel Z+",unit: "C",scalemin:"0",scalemax:"1023",};
-	variables[51] = {offset:119, size:2, name:"t_solarZn", description:"temperature of solar panel Z-",unit: "C",scalemin:"0",scalemax:"1023",};	
+	variables[44] = {offset:105, size:2, name:"t_phone", description:"temperature of phone board",unit: "C",scalemin:"0",scalemax:"1023",additionalScaling:function(v) { return (v*.4888)-273 },};
+	variables[45] = {offset:107, size:2, name:"t_ADCS_MHX", description:"temperature of ADCS_MHX board",unit: "C",scalemin:"0",scalemax:"1023",additionalScaling:function(v) { return (v*.4888)-273 },};
+	variables[46] = {offset:109, size:2, name:"t_solarXp", description:"temperature of solar panel X+",unit: "C",scalemin:"0",scalemax:"1023",additionalScaling:function(v) { return (v*.4888)-273 },};
+	variables[47] = {offset:111, size:2, name:"t_solarXn", description:"temperature of solar panel X-",unit: "C",scalemin:"0",scalemax:"1023",additionalScaling:function(v) { return (v*.4888)-273 },};
+	variables[48] = {offset:113, size:2, name:"t_solarYp", description:"temperature of solar panel Y+",unit: "C",scalemin:"0",scalemax:"1023",additionalScaling:function(v) { return (v*.4888)-273 },};
+	variables[49] = {offset:115, size:2, name:"t_solarYn", description:"temperature of solar panel Y-",unit: "C",scalemin:"0",scalemax:"1023",additionalScaling:function(v) { return (v*.4888)-273 },};
+	variables[50] = {offset:117, size:2, name:"t_solarZp", description:"temperature of solar panel Z+",unit: "C",scalemin:"0",scalemax:"1023",additionalScaling:function(v) { return (v*.4888)-273 },};
+	variables[51] = {offset:119, size:2, name:"t_solarZn", description:"temperature of solar panel Z-",unit: "C",scalemin:"0",scalemax:"1023",additionalScaling:function(v) { return (v*.4888)-273 },};	
 	} // Charge packet
 	
 	if ((PacketType=="A") || (PacketType=="D")) {
