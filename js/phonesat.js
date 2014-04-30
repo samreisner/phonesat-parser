@@ -82,6 +82,10 @@ jQuery( document ).ready(function() {
 				encodedPacket = seven;			
 			}
 			jQuery("#results").html("");
+			var d1 = new Date();
+			jQuery("#results").append("\nWeb Parser v.3 - http://samreisner.com/phonesat-parser/\nMode Selected: "+Satellite+"\nReport Generated at "+d1.toUTCString()+"\n\n");
+			
+			
 			jQuery("#results").append("Preamble: "+Preamble+"<br />");
 			jQuery("#results").append("Packet Type: "+PacketType+" (Charging)<br />");
 			jQuery("#results").append("Scaled Battery Voltage (V): "+BatteryVoltage+" <span style='color:555;'><i>Measured: </i>"+(BatteryVoltage/102.3).toFixed(5)+"</span><br />");						
@@ -99,6 +103,9 @@ jQuery( document ).ready(function() {
 			ptime = RegExp.$4;
 			encodedPacket = RegExp.$5;
 			jQuery("#results").html("");
+			var d1 = new Date();
+			jQuery("#results").append("\nWeb Parser v.3 - http://samreisner.com/phonesat-parser/\nMode Selected: "+Satellite+"\nReport Generated at "+d1.toUTCString()+"\n\n");
+			
 			jQuery("#results").append("Preamble: "+Preamble+"<br />");
 			jQuery("#results").append("Packet Type: "+PacketType+" (bdot <b>CAUTION: NOT IMPLEMENTED</b>)<br />");
 			
@@ -118,6 +125,9 @@ jQuery( document ).ready(function() {
 			utime = RegExp.$4;
 			encodedPacket = RegExp.$5;
 			jQuery("#results").html("");
+			var d1 = new Date();
+			jQuery("#results").append("\nWeb Parser v.3 - http://samreisner.com/phonesat-parser/\nMode Selected: "+Satellite+"\nReport Generated at "+d1.toUTCString()+"\n\n");
+			
 			jQuery("#results").append("Preamble: "+Preamble+"<br />");
 			jQuery("#results").append("Packet Type: "+PacketType+" (pointing <b>CAUTION: NOT IMPLEMENTED</b>)<br />");
 			jQuery("#warnings").show();
@@ -190,8 +200,7 @@ jQuery( document ).ready(function() {
 			}
 			
 			jQuery("[data-toggle=tooltip]").tooltip();
-			var d1 = new Date();
-			jQuery("#results").append("\nWeb Parser v.3 - http://samreisner.com/phonesat-parser/\nMode Selected: "+Satellite+"\nReport Generated at "+d1.toUTCString());
+
 		
 	});
 	
